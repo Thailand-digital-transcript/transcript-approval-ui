@@ -100,6 +100,11 @@ sandbox.
   (`publicClient: true`, `standardFlowEnabled: true`, no client secret,
   redirect URIs `http://localhost:5173/*` and `http://localhost:5173/`,
   web origins `+`).
+- A confidential client-credentials client `transcript-e2e`
+  (`publicClient: false`, `serviceAccountsEnabled: true`, no interactive
+  flow) with a hardcoded `institution_code=01110` claim mapper and a
+  realm-roles mapper. Used only by the e2e harness to obtain a machine
+  token (secret `e2e-dev-secret`, dev-only).
 - Two client protocol mappers:
   - a `User Attribute` mapper copying the user's `institution_code`
     attribute into the access/ID token (read by `AuthProvider` as
@@ -109,20 +114,25 @@ sandbox.
     `tokenParsed.realm_access.roles`). Without this mapper the standard
     `roles` scope is absent and roles never populate.
 - Three demo users — `registrar1` (role `registrar`, institution
-  `acme-uni`), `dean1` (role `dean`, institution `acme-uni`), and
-  `dual1` (both roles, institution `globex-edu`) — for exercising the
-  single-queue, dual-queue, and no-approver-role code paths.
+  `01110`), `dean1` (role `dean`, institution `01110`), and
+  `dual1` (both roles, institution `99999`) — for exercising the
+  single-queue, dual-queue, and no-approver-role code paths. The
+  institutions are aligned to the orchestrator's `01110` / `99999`
+  fixtures so a browser login can act on the harness-created batch.
 
-**This realm is dev-only.** The client carries **no client secret** (it is a
-public PKCE client). The three demo users **intentionally ship with seed
-password credentials** (bcrypt hashes in `credentials[]`) so the realm is
-usable for local login the moment it is imported — this is a deliberate,
-reviewed dev-convenience choice, not an oversight, and is the one knowing
-exception to the "no `credentials`" guidance in the build plan. Production
-realms (and their users) are configured out-of-repo (operator-managed). **Do
-not import `realm-export.json`, or reuse its seed users, in any realm that is
-not a throwaway dev / test sandbox** — copying it elsewhere seeds accounts
-with known passwords.
+**This realm is dev-only.** The `transcript-approval-ui` client carries
+**no client secret** (it is a public PKCE client). The `transcript-e2e`
+client does carry a client secret (`e2e-dev-secret`) because its
+client-credentials flow needs one; it is **dev-only** and must never be
+imported into a production realm. The three demo users **intentionally
+ship with seed password credentials** (bcrypt hashes in `credentials[]`)
+so the realm is usable for local login the moment it is imported — this
+is a deliberate, reviewed dev-convenience choice, not an oversight, and
+is the one knowing exception to the "no `credentials`" guidance in the
+build plan. Production realms (and their users) are configured out-of-repo
+(operator-managed). **Do not import `realm-export.json`, or reuse its
+seed users, in any realm that is not a throwaway dev / test sandbox** —
+copying it elsewhere seeds accounts with known passwords.
 
 ### Importing into a local Keycloak
 

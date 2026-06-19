@@ -49,7 +49,7 @@
       "firstName": "Reggie",
       "lastName": "Registrar",
       "attributes": {
-        "institution_code": ["acme-uni"]
+        "institution_code": ["01110"]
       },
       "credentials": [
         {
@@ -70,7 +70,7 @@
       "firstName": "Diana",
       "lastName": "Dean",
       "attributes": {
-        "institution_code": ["acme-uni"]
+        "institution_code": ["01110"]
       },
       "credentials": [
         {
@@ -91,7 +91,7 @@
       "firstName": "Dee",
       "lastName": "Dual",
       "attributes": {
-        "institution_code": ["globex-edu"]
+        "institution_code": ["99999"]
       },
       "credentials": [
         {
@@ -170,6 +170,45 @@
         "address",
         "phone",
         "offline_access"
+      ]
+    },
+    {
+      "clientId": "transcript-e2e",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "e2e-dev-secret",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "protocolMappers": [
+        {
+          "name": "institution_code",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-hardcoded-claim-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "institution_code",
+            "claim.value": "01110",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        }
       ]
     }
   ],

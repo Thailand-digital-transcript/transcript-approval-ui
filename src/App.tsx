@@ -1,17 +1,17 @@
-import { Routes, Route, Navigate, useParams } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthGuard } from './auth/AuthGuard';
 import { ErrorToast } from './components/ErrorToast';
 import { AppNav } from './components/AppNav';
 import { QueuePage } from './pages/QueuePage';
+import { BatchDetailPage } from './pages/BatchDetailPage';
 
 /**
  * App shell — wires AuthGuard, the global toast surface, the top nav,
- * and the three B8 routes. The three pages are lightweight
- * placeholders for now; B9/B10/B11 replace them in turn:
+ * and the three Phase B routes:
  *
  * - `/queue`        → B9 (`QueuePage`)
  * - `/batches/:id`  → B10 (`BatchDetailPage`)
- * - `/monitor`      → B11 (`MonitorPage`)
+ * - `/monitor`      → B11 (`MonitorPage`, not yet implemented)
  */
 export function App() {
   return (
@@ -23,25 +23,13 @@ export function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/queue" replace />} />
             <Route path="/queue" element={<QueuePage />} />
-            <Route path="/batches/:id" element={<BatchDetailPlaceholder />} />
+            <Route path="/batches/:id" element={<BatchDetailPage />} />
             <Route path="/monitor" element={<MonitorPlaceholder />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
       </div>
     </AuthGuard>
-  );
-}
-
-function BatchDetailPlaceholder() {
-  const { id } = useParams<{ id: string }>();
-  return (
-    <div
-      data-testid="batch-detail-placeholder"
-      className="flex h-64 items-center justify-center text-muted-foreground"
-    >
-      Batch detail (placeholder){id ? ` — ${id}` : ''}
-    </div>
   );
 }
 

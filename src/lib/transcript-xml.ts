@@ -25,9 +25,13 @@ export function parseTranscriptXml(xml: string): Transcript {
   if (doc.querySelector('parsererror')) throw new Error('invalid transcript XML');
 
   const ctx = first(doc, 'TranscriptContext');
-  const stu = first(doc, 'Student')!;
+  const stu = first(doc, 'Student');
+  // A document can parse cleanly yet still lack the Student element; fail
+  // explicitly here (caught by TranscriptView's fallback) rather than NPE
+  // on a downstream byLang(stu, …) dereference.
+  if (!stu) throw new Error('transcript XML has no Student element');
   const org = first(doc, 'Organization');
-  const prog = stu ? first(stu, 'ProgramContext') : null;
+  const prog = first(stu, 'ProgramContext');
 
   const ids = stu ? Array.from(stu.children).filter(
     (c) => c.namespaceURI === TC && c.localName === 'DataSubjectID') as Element[] : [];

@@ -32,4 +32,8 @@ docs/superpowers
 node_modules
 dist/
 
+# Local env (may carry the VITE_AUTH_DISABLED dev escape hatch — never commit)
+.env
+.env.*.local
+
 .superpowers/

@@ -1,0 +1,227 @@
+{
+  "realm": "transcript",
+  "enabled": true,
+  "accessTokenLifespan": 1800,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "verifyEmail": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": false,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 30,
+  "roles": {
+    "realm": [
+      {
+        "name": "registrar",
+        "description": "Registrar approver: approves batches pending registrar sign-off",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "transcript",
+        "attributes": {}
+      },
+      {
+        "name": "dean",
+        "description": "Dean approver: approves batches pending dean sign-off",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "transcript",
+        "attributes": {}
+      }
+    ]
+  },
+  "users": [
+    {
+      "username": "registrar1",
+      "enabled": true,
+      "email": "registrar1@acme-uni.example",
+      "emailVerified": true,
+      "firstName": "Reggie",
+      "lastName": "Registrar",
+      "attributes": {
+        "institution_code": ["acme-uni"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "$2a$10$92y3Dm6gg5/k45NG.pcOiOBph0eJuRgoGUNyqukn.8CH7mVQjFSg.",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["registrar"],
+      "clientRoles": {},
+      "groups": []
+    },
+    {
+      "username": "dean1",
+      "enabled": true,
+      "email": "dean1@acme-uni.example",
+      "emailVerified": true,
+      "firstName": "Diana",
+      "lastName": "Dean",
+      "attributes": {
+        "institution_code": ["acme-uni"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "$2a$10$73XMrMjZqAhe8iTeOTt1WOU6fM60kA1nhJeuf1XllLOJMvfUq/ML2",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["dean"],
+      "clientRoles": {},
+      "groups": []
+    },
+    {
+      "username": "dual1",
+      "enabled": true,
+      "email": "dual1@globex-edu.example",
+      "emailVerified": true,
+      "firstName": "Dee",
+      "lastName": "Dual",
+      "attributes": {
+        "institution_code": ["globex-edu"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "$2a$10$2ozFHsQuvfZaF1P2BQPCXukUilz3gjVGZeLkVWEPhhgJC/TeTVOVa",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["registrar", "dean"],
+      "clientRoles": {},
+      "groups": []
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "transcript-approval-ui",
+      "name": "Transcript Approval UI (dev)",
+      "enabled": true,
+      "publicClient": true,
+      "bearerOnly": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "consentRequired": false,
+      "frontchannelLogout": true,
+      "redirectUris": [
+        "http://localhost:5173/*",
+        "http://localhost:5173/"
+      ],
+      "webOrigins": ["+"],
+      "rootUrl": "http://localhost:5173",
+      "baseUrl": "/",
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:5173/"
+      },
+      "protocolMappers": [
+        {
+          "name": "institution_code",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "institution_code",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "claim.name": "institution_code",
+            "jsonType.label": "String"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "email",
+        "profile",
+        "role_list",
+        "web-origins"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access"
+      ]
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "role_list",
+      "description": "SAML role list",
+      "protocol": "openid-connect",
+      "attributes": {
+        "consent.screen.text": "${roleListScopeConsentText}",
+        "display.on.consent.screen": "true"
+      },
+      "protocolMappers": [
+        {
+          "name": "role_list",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-role-list-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "multivalued": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "defaultDefaultClientScopes": [
+    "role_list",
+    "profile",
+    "email",
+    "web-origins"
+  ],
+  "defaultOptionalClientScopes": [
+    "offline_access",
+    "address",
+    "phone"
+  ],
+  "browserSecurityHeaders": {
+    "contentSecurityPolicyReportOnly": "",
+    "xContentTypeOptions": "nosniff",
+    "xRobotsTag": "none",
+    "xFrameOptions": "DENY"
+  },
+  "smtpServer": {},
+  "loginTheme": "",
+  "accountTheme": "",
+  "adminTheme": "",
+  "emailTheme": "",
+  "eventsEnabled": false,
+  "eventsListeners": ["jboss-logging"],
+  "enabledEventTypes": [],
+  "adminEventsEnabled": false,
+  "adminEventsDetailsEnabled": false,
+  "internationalizationEnabled": false,
+  "supportedLocales": [],
+  "browserFlow": "browser",
+  "registrationFlow": "registration",
+  "directGrantFlow": "direct grant",
+  "resetCredentialsFlow": "reset credentials",
+  "clientAuthenticationFlow": "clients",
+  "firstBrokerLoginFlow": "first broker login",
+  "keycloakVersion": "24.0.0",
+  "userManagedAccessAllowed": false,
+  "organizationsEnabled": false
+}

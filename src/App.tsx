@@ -4,14 +4,15 @@ import { ErrorToast } from './components/ErrorToast';
 import { AppNav } from './components/AppNav';
 import { QueuePage } from './pages/QueuePage';
 import { BatchDetailPage } from './pages/BatchDetailPage';
+import { MonitorPage } from './pages/MonitorPage';
 
 /**
  * App shell — wires AuthGuard, the global toast surface, the top nav,
- * and the three Phase B routes:
+ * and the Phase B routes:
  *
  * - `/queue`        → B9 (`QueuePage`)
  * - `/batches/:id`  → B10 (`BatchDetailPage`)
- * - `/monitor`      → B11 (`MonitorPage`, not yet implemented)
+ * - `/monitor`      → B11 (`MonitorPage`)
  */
 export function App() {
   return (
@@ -24,23 +25,12 @@ export function App() {
             <Route path="/" element={<Navigate to="/queue" replace />} />
             <Route path="/queue" element={<QueuePage />} />
             <Route path="/batches/:id" element={<BatchDetailPage />} />
-            <Route path="/monitor" element={<MonitorPlaceholder />} />
+            <Route path="/monitor" element={<MonitorPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
       </div>
     </AuthGuard>
-  );
-}
-
-function MonitorPlaceholder() {
-  return (
-    <div
-      data-testid="monitor-placeholder"
-      className="flex h-64 items-center justify-center text-muted-foreground"
-    >
-      Monitor (placeholder)
-    </div>
   );
 }
 

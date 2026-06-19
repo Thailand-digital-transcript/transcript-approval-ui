@@ -14,6 +14,9 @@ import { useAuth } from '@/auth/useAuth';
  */
 const LINKS = [
   { to: '/queue', label: 'Queue' },
+  // TODO: gate on monitor role when role name is known. For now the
+  // link is shown to every authenticated user (B11 brief: role-gating
+  // intentionally deferred).
   { to: '/monitor', label: 'Monitor' },
 ];
 

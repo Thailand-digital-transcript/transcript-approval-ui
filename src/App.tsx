@@ -2,6 +2,7 @@ import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { AuthGuard } from './auth/AuthGuard';
 import { ErrorToast } from './components/ErrorToast';
 import { AppNav } from './components/AppNav';
+import { QueuePage } from './pages/QueuePage';
 
 /**
  * App shell — wires AuthGuard, the global toast surface, the top nav,
@@ -21,7 +22,7 @@ export function App() {
         <main>
           <Routes>
             <Route path="/" element={<Navigate to="/queue" replace />} />
-            <Route path="/queue" element={<QueuePlaceholder />} />
+            <Route path="/queue" element={<QueuePage />} />
             <Route path="/batches/:id" element={<BatchDetailPlaceholder />} />
             <Route path="/monitor" element={<MonitorPlaceholder />} />
             <Route path="*" element={<NotFound />} />
@@ -29,17 +30,6 @@ export function App() {
         </main>
       </div>
     </AuthGuard>
-  );
-}
-
-function QueuePlaceholder() {
-  return (
-    <div
-      data-testid="queue-placeholder"
-      className="flex h-64 items-center justify-center text-muted-foreground"
-    >
-      Queue (placeholder)
-    </div>
   );
 }
 

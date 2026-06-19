@@ -30,6 +30,12 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     css: false,
     include: ['src/**/*.test.{ts,tsx}'],
+    // The `prod-guard` test runs in a separate Vitest project that
+    // forces `import.meta.env.PROD === true` (see
+    // vitest.config.prod-guard.ts). Exclude it from the main project to
+    // avoid running it in the default (non-prod) mode where the guard
+    // would not fire.
+    exclude: ['**/*.prod-guard.test.ts'],
     testTimeout: 15000, // React 19 + Radix Select interactions are slower in full-suite runs
   },
 })

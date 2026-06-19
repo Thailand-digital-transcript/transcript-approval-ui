@@ -1,4 +1,3 @@
-/// <reference types="vitest/config" />
 import { defineConfig } from 'vitest/config';
 
 // A separate Vitest project that exercises the AuthProvider PROD guard

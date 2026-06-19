@@ -19,4 +19,11 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  // shadcn primitives (vendored verbatim from the reference app) export cva
+  // variant functions alongside their component; the fast-refresh rule does
+  // not meaningfully apply to these and is disabled for the ui/ folder only.
+  {
+    files: ['src/components/ui/**'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
 ])

@@ -100,18 +100,29 @@ sandbox.
   (`publicClient: true`, `standardFlowEnabled: true`, no client secret,
   redirect URIs `http://localhost:5173/*` and `http://localhost:5173/`,
   web origins `+`).
-- A `User Attribute` protocol mapper that copies the user's
-  `institution_code` attribute into the access token and ID token
-  (read by `AuthProvider` as `tokenParsed.institution_code`).
+- Two client protocol mappers:
+  - a `User Attribute` mapper copying the user's `institution_code`
+    attribute into the access/ID token (read by `AuthProvider` as
+    `tokenParsed.institution_code`);
+  - a `User Realm Role` mapper emitting the user's realm roles as the
+    multivalued `realm_access.roles` claim (read by `AuthProvider` as
+    `tokenParsed.realm_access.roles`). Without this mapper the standard
+    `roles` scope is absent and roles never populate.
 - Three demo users — `registrar1` (role `registrar`, institution
   `acme-uni`), `dean1` (role `dean`, institution `acme-uni`), and
   `dual1` (both roles, institution `globex-edu`) — for exercising the
   single-queue, dual-queue, and no-approver-role code paths.
 
-**This realm is dev-only with all client secrets stripped.** Production
-realms are configured out-of-repo (operator-managed). Do not import
-`realm-export.json` into a realm that is not a throwaway dev / test
-sandbox.
+**This realm is dev-only.** The client carries **no client secret** (it is a
+public PKCE client). The three demo users **intentionally ship with seed
+password credentials** (bcrypt hashes in `credentials[]`) so the realm is
+usable for local login the moment it is imported — this is a deliberate,
+reviewed dev-convenience choice, not an oversight, and is the one knowing
+exception to the "no `credentials`" guidance in the build plan. Production
+realms (and their users) are configured out-of-repo (operator-managed). **Do
+not import `realm-export.json`, or reuse its seed users, in any realm that is
+not a throwaway dev / test sandbox** — copying it elsewhere seeds accounts
+with known passwords.
 
 ### Importing into a local Keycloak
 
@@ -123,9 +134,11 @@ bin/kc.sh start-dev
 ```
 
 On first start the realm will be present at `http://localhost:8080/realms/transcript`.
-The demo users' passwords are real bcrypt hashes embedded in the export;
-the credentials list in the file is the single source of truth for
-local dev.
+The demo users' passwords are seed bcrypt hashes embedded in the export (see
+the dev-only note above); the `credentials` list in the file is the single
+source of truth for local dev. To rotate a demo password, reset it in the
+Keycloak Admin UI (or via `kcadm.sh set-password`) after import — do not commit
+real passwords.
 
 ## Fixtures
 

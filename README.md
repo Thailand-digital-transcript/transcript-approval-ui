@@ -215,9 +215,6 @@ the JWT issued by the `transcript` realm.
 
 ## Development conventions
 
-- **Do not** add `Co-Authored-By:` (or any co-author attribution) to
-  commit messages — see the root `CLAUDE.md` for the workspace-wide
-  rule.
 - `dist/`, `node_modules/`, `.env`, `CLAUDE.md`, `.claude/`, and
   `docs/superpowers/` are gitignored — they stay local.
 - `src/components/ui/*` carries the four pre-existing

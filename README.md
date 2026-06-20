@@ -212,16 +212,3 @@ the UI; it only routes the user to the right queue. Decisions are
 authorized by the orchestrator's `CallerContext`, which reads the
 `registrar` / `dean` realm role + the `institution_code` claim from
 the JWT issued by the `transcript` realm.
-
-## Development conventions
-
-- `dist/`, `node_modules/`, `.env`, `CLAUDE.md`, `.claude/`, and
-  `docs/superpowers/` are gitignored — they stay local.
-- `src/components/ui/*` carries the four pre-existing
-  `react-refresh/only-export-components` lint errors. They are shadcn
-  scaffold leftovers (helper exports co-located with component
-  exports) and are out of scope for feature work. `npm run lint` will
-  continue to report them.
-- The `transcript` realm export and this `README.md` are the only
-  documentation / config files committed at the repo root; everything
-  else lives under `src/`.

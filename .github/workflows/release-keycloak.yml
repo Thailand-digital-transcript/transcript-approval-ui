@@ -1,0 +1,52 @@
+name: release-keycloak
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+    paths:
+      - 'keycloak/**'
+      - '.github/workflows/release-keycloak.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build image for verification
+        uses: docker/build-push-action@v6
+        with:
+          context: ./keycloak
+          load: true
+          tags: verify:local
+
+      - name: Verify image
+        run: ./.github/verify-image-keycloak.sh verify:local
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/thailand-digital-transcript/transcript-keycloak
+          tags: |
+            type=raw,value=main,enable={{is_default_branch}}
+            type=sha,prefix=sha-
+            type=semver,pattern=v{{version}}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ./keycloak
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

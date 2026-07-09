@@ -30,22 +30,49 @@ done
 # disprove the transform either way (confirmed empirically: its body has no
 # "clients" key at all). Mint an admin token instead and read the client
 # attribute directly via the admin REST API.
-token_resp=$(docker exec "$name" sh -c \
-  'BODY="grant_type=password&client_id=admin-cli&username=admin&password=admin"; LEN=${#BODY}; \
-   exec 3<>/dev/tcp/localhost/8080 && \
-   printf "POST /realms/master/protocol/openid-connect/token HTTP/1.1\r\nHost: localhost:8080\r\nContent-Type: application/x-www-form-urlencoded\r\nConnection: close\r\nContent-Length: %s\r\n\r\n%s" "$LEN" "$BODY" >&3 && \
-   cat <&3' 2>/dev/null)
-token=$(printf '%s' "$token_resp" | tail -n1 | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
-[ -n "$token" ] || { echo "FAIL: could not obtain admin token"; docker logs "$name"; exit 1; }
+#
+# Both the token mint and the admin-API read are wrapped in the same retry
+# loop as the readiness gate above: /realms/transcript returning 200 only
+# proves the public realm endpoint is up, not that the admin REST API has
+# finished loading clients into whatever internal state it queries. On a
+# constrained/slower runner those two can become ready at meaningfully
+# different times, so a single-shot check here can observe a real (non-error)
+# but not-yet-fully-loaded response. Retrying turns that into a real
+# wait-for-readiness instead of a race, and still fails (just slightly later)
+# if the transform is genuinely missing from the image.
+clients_ok=0
+clients_resp=""
+for _ in $(seq 1 30); do
+  token_resp=$(docker exec "$name" sh -c \
+    'BODY="grant_type=password&client_id=admin-cli&username=admin&password=admin"; LEN=${#BODY}; \
+     exec 3<>/dev/tcp/localhost/8080 && \
+     printf "POST /realms/master/protocol/openid-connect/token HTTP/1.1\r\nHost: localhost:8080\r\nContent-Type: application/x-www-form-urlencoded\r\nConnection: close\r\nContent-Length: %s\r\n\r\n%s" "$LEN" "$BODY" >&3 && \
+     cat <&3' 2>/dev/null)
+  token=$(printf '%s' "$token_resp" | tail -n1 | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
+  if [ -n "$token" ]; then
+    # Captured to a variable rather than piped straight into `grep -q`: with
+    # `pipefail` set, grep -q closes its stdin as soon as it matches, which
+    # can SIGPIPE the still-writing docker/exec process upstream and make the
+    # pipeline report failure even though grep found the match.
+    clients_resp=$(docker exec "$name" sh -c \
+      "exec 3<>/dev/tcp/localhost/8080 && printf 'GET /admin/realms/transcript/clients HTTP/1.1\r\nHost: localhost:8080\r\nAuthorization: Bearer $token\r\nConnection: close\r\n\r\n' >&3 && cat <&3" \
+      2>/dev/null)
+    if printf '%s' "$clients_resp" | grep -q '##'; then
+      clients_ok=1
+      break
+    fi
+  fi
+  sleep 2
+done
 
-# Captured to a variable rather than piped straight into `grep -q`: with
-# `pipefail` set, grep -q closes its stdin as soon as it matches, which can
-# SIGPIPE the still-writing docker/exec process upstream and make the
-# pipeline report failure even though grep found the match.
-clients_resp=$(docker exec "$name" sh -c \
-  "exec 3<>/dev/tcp/localhost/8080 && printf 'GET /admin/realms/transcript/clients HTTP/1.1\r\nHost: localhost:8080\r\nAuthorization: Bearer $token\r\nConnection: close\r\n\r\n' >&3 && cat <&3" \
-  2>/dev/null)
-printf '%s' "$clients_resp" | grep -q '##' \
-  || { echo "FAIL: post.logout.redirect.uris does not contain ## — transform did not apply"; exit 1; }
+if [ "$clients_ok" != "1" ]; then
+  echo "FAIL: post.logout.redirect.uris does not contain ## — transform did not apply"
+  echo "---- last admin API response received (for debugging) ----"
+  printf '%s\n' "$clients_resp"
+  echo "---- end response ----"
+  echo "---- container logs ----"
+  docker logs "$name"
+  exit 1
+fi
 
 echo "OK: $img imports the transcript realm with the ## transform applied"

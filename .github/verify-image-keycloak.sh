@@ -41,6 +41,7 @@ done
 # wait-for-readiness instead of a race, and still fails (just slightly later)
 # if the transform is genuinely missing from the image.
 clients_ok=0
+token_ok=0
 clients_resp=""
 for _ in $(seq 1 30); do
   token_resp=$(docker exec "$name" sh -c \
@@ -50,6 +51,10 @@ for _ in $(seq 1 30); do
      cat <&3' 2>/dev/null)
   token=$(printf '%s' "$token_resp" | tail -n1 | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
   if [ -n "$token" ]; then
+    # Latch that the mint succeeded at least once, so the failure branch below
+    # can tell "never authenticated" apart from "authenticated, but the realm
+    # lacks the transform" — two different bugs that used to share a headline.
+    token_ok=1
     # Captured to a variable rather than piped straight into `grep -q`: with
     # `pipefail` set, grep -q closes its stdin as soon as it matches, which
     # can SIGPIPE the still-writing docker/exec process upstream and make the
@@ -66,9 +71,18 @@ for _ in $(seq 1 30); do
 done
 
 if [ "$clients_ok" != "1" ]; then
-  echo "FAIL: post.logout.redirect.uris does not contain ## — transform did not apply"
+  if [ "$token_ok" != "1" ]; then
+    echo "FAIL: never obtained an admin token from /realms/master (30 attempts)"
+    echo "      — the transform was never checked; this is an auth/startup failure,"
+    echo "        not evidence that the realm is missing the ## transform."
+  else
+    echo "FAIL: post.logout.redirect.uris does not contain ## — transform did not apply"
+  fi
   echo "---- last admin API response received (for debugging) ----"
-  printf '%s\n' "$clients_resp"
+  # Redact client secrets: this realm's are published dev values, but dumping
+  # whole admin payloads containing credential-shaped fields into CI logs is a
+  # habit worth not forming.
+  printf '%s\n' "$clients_resp" | sed 's/"secret":"[^"]*"/"secret":"<redacted>"/g'
   echo "---- end response ----"
   echo "---- container logs ----"
   docker logs "$name"

@@ -7,6 +7,9 @@ on:
     paths:
       - 'keycloak/**'
       - '.github/workflows/release-keycloak.yml'
+      # The verify script gates this workflow's publish step, so a change to it
+      # must re-run the workflow — otherwise the gate itself ships unexercised.
+      - '.github/verify-image-keycloak.sh'
   workflow_dispatch:
 
 permissions:
